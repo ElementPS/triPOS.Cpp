@@ -135,9 +135,9 @@ BOOL CtriPOSOpenSSLHMACSampleDlg::OnInitDialog()
 
     m_editNonce.SetWindowTextW(L"b61a73b9-076e-44c8-b963-0088260792f9");
 
-    m_editDeveloperSecret.SetWindowTextW(L"d09fc5d1-11e0-4bb0-b83e-95d920766a78");
+    m_editDeveloperSecret.SetWindowTextW(L"");
 
-    m_editDeveloperKey.SetWindowTextW(L"a6baddb0-106d-4a89-9870-d762bde61506");
+    m_editDeveloperKey.SetWindowTextW(L"");
 
     m_editHeaders.SetWindowTextW(L"accept:*/*\r\naccept-encoding:gzip, deflate\r\naccept-language:en-US\r\ncache-control:no-cache\r\nconnection:Keep-Alive\r\ncookie:ASP.NET_SessionId=rgxa234xzzj5l1jabpa2tpyw\r\ndnt:1\r\nhost:localhost:8080\r\nreferer:http://www.ezprocessingsoftware.com:8006/EzCharge/Vantiv/ProcessSale?systemId=CRID-145&MerchantId=3928907&paymentAmount=1.0000&Token=91320f68d6004c9798f45219228865cf&duplicate=0&locationId=2\r\nuser-agent:Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; rv:11.0) like Gecko");
 
@@ -151,9 +151,9 @@ BOOL CtriPOSOpenSSLHMACSampleDlg::OnInitDialog()
 
     m_editNonce.SetWindowTextW(L"fa2ae6c1-e76f-49c3-a7bf-03805b0dc254");
 
-    m_editDeveloperSecret.SetWindowTextW(L"020eddca-4074-4fc3-a766-688ad78f9bd7");
+    m_editDeveloperSecret.SetWindowTextW(L"");
 
-    m_editDeveloperKey.SetWindowTextW(L"604db5a7-dd87-4856-ad73-eb12e988b1cc");
+    m_editDeveloperKey.SetWindowTextW(L"");
 
     m_editHeaders.SetWindowTextW(L"");
 #endif
