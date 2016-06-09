@@ -37,6 +37,7 @@ private:
     std::string CtriPOSOpenSSLHMACSampleDlg::CreateRequestSignature(std::wstring requestDate, std::wstring developerKey, std::string hashedCanonicalRequest, std::string signingKey, std::wstring algorithm);
     std::string CtriPOSOpenSSLHMACSampleDlg::CreateTpAuthorizationHeader(std::wstring version, std::wstring developerKey, std::wstring headers, std::wstring nonce, std::wstring requestDate, std::string requestSignature, std::wstring algorithm);
 
+	std::string CtriPOSOpenSSLHMACSampleDlg::GenerateTPAuth();
     void CtriPOSOpenSSLHMACSampleDlg::OutputClear();
     void CtriPOSOpenSSLHMACSampleDlg::Output(const void *value, int length, const char *tag = NULL);
     void CtriPOSOpenSSLHMACSampleDlg::Output(const char *value, const char *tag = NULL);
@@ -59,6 +60,18 @@ private:
     std::string CtriPOSOpenSSLHMACSampleDlg::ToMultiByte(LPCTSTR wideChar);
 
     std::string CtriPOSOpenSSLHMACSampleDlg::Trim(std::string string, char trimChar = ' ');
+	void CtriPOSOpenSSLHMACSampleDlg::CollectInput();
+
+	std::wstring method;
+	std::wstring algorithm;
+	std::wstring version;
+	std::wstring requestDate;
+	std::wstring uri;
+	std::wstring nonce;
+	std::wstring developerKey;
+	std::wstring developerSecret;
+	std::wstring headers;
+	std::wstring body;
 
 public:
     CComboBox m_comboBoxMethod;
@@ -72,5 +85,7 @@ public:
     CEdit m_editHeaders;
     CEdit m_editBody;
     CEdit m_editOutput;
+	CEdit m_editOutput2;
     afx_msg void OnBnClickedButtonGo();
+	afx_msg void OnBnClickedButtonGo3();
 };

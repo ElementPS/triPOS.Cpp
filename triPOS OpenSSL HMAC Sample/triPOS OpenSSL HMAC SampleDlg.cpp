@@ -3,6 +3,7 @@
 //
 
 #include "stdafx.h"
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include "triPOS OpenSSL HMAC Sample.h"
 #include "triPOS OpenSSL HMAC SampleDlg.h"
 #include "afxdialogex.h"
@@ -13,6 +14,13 @@
 #include <map>
 #include <sstream>
 #include <utility>
+#include <iostream>
+#include <string>
+
+#pragma comment (lib, "wsock32.lib")
+
+#include <stdlib.h>
+#include <winsock.h>
 
 #include "openssl/hmac.h"
 #include "openssl/sha.h"
@@ -20,6 +28,10 @@
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+
+using namespace std;
+
+#define BUFFERSIZE 1024
 
 
 LPCTSTR methods[] =
@@ -37,11 +49,8 @@ LPCTSTR algorithms[] =
     NULL
 };
 
-LPCTSTR defaultHeaders = L"tp-application-version: 1.0.0\r\ntp-application-id: 1234\r\ntp-application-name: Sample\r\nContent-Type: application/json\r\naccept: application/json";
-
-// CtriPOSOpenSSLHMACSampleDlg dialog
-
-
+LPCTSTR defaultHeaders = L"Content-Type: application/json\r\nAccept: application/json\r\ntp-application-id: 1234\r\ntp-application-name: CPlusPlus\r\ntp-application-version: 1.0.0\r\ntp-return-logs: false";
+LPCTSTR defaultData = L"{\"address\": {\"BillingAddress1\": \"123 Sample Stree\",\"BillingAddress2\" : \"Suite 101\",\"BillingCity\" : \"Chandler\", \"BillingPostalCode\" : \"85224\", \"BillingState\" : \"AZ\"}, \"cashbackAmount\": 0, \"confenienceFeeAmount\" : 0, \"emvFallbackReason\" : \"None\", \"tipAmount\" : 0, \"clerkNumber\" : \"Clerk101\", \"configuration\" : { \"allowPartialApprovals\": false, \"checkForDuplicateTransactions\" : true, \"currencyCode\" : \"Usd\", \"marketCode\" : \"Retail\"},\"laneId\": 9999, \"referenceNumber\" : \"Ref000001\", \"shiftId\" : \"ShiftA\", \"ticketNumber\" : \"T0000001\"}";
 
 CtriPOSOpenSSLHMACSampleDlg::CtriPOSOpenSSLHMACSampleDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CtriPOSOpenSSLHMACSampleDlg::IDD, pParent)
@@ -63,16 +72,15 @@ void CtriPOSOpenSSLHMACSampleDlg::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_EDIT_HEADERS, m_editHeaders);
     DDX_Control(pDX, IDC_EDIT_BODY, m_editBody);
     DDX_Control(pDX, IDC_EDIT_OUTPUT, m_editOutput);
+	DDX_Control(pDX, IDC_EDIT_OUTPUT2, m_editOutput2);
 }
 
 BEGIN_MESSAGE_MAP(CtriPOSOpenSSLHMACSampleDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
     ON_BN_CLICKED(IDC_BUTTON_GO, &CtriPOSOpenSSLHMACSampleDlg::OnBnClickedButtonGo)
+	ON_BN_CLICKED(IDC_BUTTON_GO3, &CtriPOSOpenSSLHMACSampleDlg::OnBnClickedButtonGo3)
 END_MESSAGE_MAP()
-
-
-// CtriPOSOpenSSLHMACSampleDlg message handlers
 
 BOOL CtriPOSOpenSSLHMACSampleDlg::OnInitDialog()
 {
@@ -129,7 +137,6 @@ BOOL CtriPOSOpenSSLHMACSampleDlg::OnInitDialog()
 
 
 #if 1
-    m_editRequestDate.SetWindowTextW(L"2015-10-05T23:43:06.9467436Z");
 
     m_editUri.SetWindowTextW(L"http://localhost:8080/api/v1/sale");
 
@@ -139,9 +146,8 @@ BOOL CtriPOSOpenSSLHMACSampleDlg::OnInitDialog()
 
     m_editDeveloperKey.SetWindowTextW(L"");
 
-    m_editHeaders.SetWindowTextW(L"accept:*/*\r\naccept-encoding:gzip, deflate\r\naccept-language:en-US\r\ncache-control:no-cache\r\nconnection:Keep-Alive\r\ncookie:ASP.NET_SessionId=rgxa234xzzj5l1jabpa2tpyw\r\ndnt:1\r\nhost:localhost:8080\r\nreferer:http://www.ezprocessingsoftware.com:8006/EzCharge/Vantiv/ProcessSale?systemId=CRID-145&MerchantId=3928907&paymentAmount=1.0000&Token=91320f68d6004c9798f45219228865cf&duplicate=0&locationId=2\r\nuser-agent:Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; rv:11.0) like Gecko");
+	m_editBody.SetWindowTextW(defaultData);
 
-    m_editBody.SetWindowTextW(L"{\"address\":null,\"transactionAmount\":1.0000,\"clerkNumber\":null,\"configuration\":{\"AllowPartialApprovals\":false,\"CheckForDuplicateTransactions\":true,\"CurrencyCode\":\"Usd\",\"MarketCode\":\"Retail\"},\"laneId\":9999,\"referenceNumber\":\"SRef1634\",\"shiftId\":\"Store\",\"ticketNumber\":\"1634\"}");
 #else
     m_comboBoxMethod.SetCurSel(1);
 
@@ -198,92 +204,80 @@ HCURSOR CtriPOSOpenSSLHMACSampleDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+void CtriPOSOpenSSLHMACSampleDlg::CollectInput()
+{
+	WCHAR *buffer;
+
+	buffer = (WCHAR *)calloc(1024 + 1, sizeof(WCHAR));
+
+	if (buffer == NULL)
+	{
+		Output("ERROR ALLOCATING BUFFER");
+
+		return;
+	}
+
+	m_comboBoxMethod.GetLBText(m_comboBoxMethod.GetCurSel(), buffer);
+	method = buffer;
+	m_comboBoxAlgorithm.GetLBText(m_comboBoxAlgorithm.GetCurSel(), (LPTSTR)buffer);
+	algorithm = buffer;
+	m_editVersion.GetWindowTextW(buffer, 1024);
+	version = buffer;
+	m_editRequestDate.GetWindowTextW(buffer, 1024);
+	requestDate = buffer;
+	m_editUri.GetWindowTextW(buffer, 1024);
+	uri = buffer;
+	m_editNonce.GetWindowTextW(buffer, 1024);
+	nonce = buffer;
+	m_editDeveloperKey.GetWindowTextW(buffer, 1024);
+	developerKey = buffer;
+	m_editDeveloperSecret.GetWindowTextW(buffer, 1024);
+	developerSecret = buffer;
+	free(buffer);
+
+	int length = m_editHeaders.GetWindowTextLengthW() + 1;
+	buffer = (WCHAR *)calloc(length, sizeof(WCHAR));
+
+	if (buffer == NULL)
+	{
+		Output("ERROR ALLOCATING HEADERS BUFFER");
+	}
+
+	m_editHeaders.GetWindowTextW(buffer, length);
+	headers = buffer;
+	free(buffer);
+
+	length = m_editBody.GetWindowTextLengthW() + 1;
+	buffer = (WCHAR *)calloc(length, sizeof(WCHAR));
+
+	if (buffer == NULL)
+	{
+		Output("ERROR ALLOCATING BODY BUFFER");
+	}
+
+	m_editBody.GetWindowTextW(buffer, length);
+	body = buffer;
+	free(buffer);
+}
+
+std::string CtriPOSOpenSSLHMACSampleDlg::GenerateTPAuth()
+{
+	OutputClear();
+
+	CollectInput();
+
+	std::string hashedCanonicalRequest = HashCanonicalRequest(method, uri, headers, body, algorithm);
+
+	std::string signingKey = CreateSigningKey(requestDate, nonce, developerSecret, algorithm);
+
+	std::string requestSignature = CreateRequestSignature(requestDate, developerKey, hashedCanonicalRequest, signingKey, algorithm);
+
+	return CreateTpAuthorizationHeader(version, developerKey, headers, nonce, requestDate, requestSignature, algorithm);
+}
+
 void CtriPOSOpenSSLHMACSampleDlg::OnBnClickedButtonGo()
 {
-    OutputClear();
-
-    WCHAR *buffer;
-
-    buffer = (WCHAR *)calloc(1024 + 1, sizeof(WCHAR));
-
-    if (buffer == NULL)
-    {
-        Output("ERROR ALLOCATING BUFFER");
-
-        return;
-    }
-
-    m_comboBoxMethod.GetLBText(m_comboBoxMethod.GetCurSel(), buffer);
-
-    std::wstring method(buffer);
-
-    m_comboBoxAlgorithm.GetLBText(m_comboBoxAlgorithm.GetCurSel(), (LPTSTR)buffer);
-
-    std::wstring algorithm(buffer);
-
-    m_editVersion.GetWindowTextW(buffer, 1024);
-
-    std::wstring version(buffer);
-
-    m_editRequestDate.GetWindowTextW(buffer, 1024);
-
-    std::wstring requestDate(buffer);
-
-    m_editUri.GetWindowTextW(buffer, 1024);
-
-    std::wstring uri(buffer);
-
-    m_editNonce.GetWindowTextW(buffer, 1024);
-
-    std::wstring nonce(buffer);
-
-    m_editDeveloperKey.GetWindowTextW(buffer, 1024);
-
-    std::wstring developerKey(buffer);
-
-    m_editDeveloperSecret.GetWindowTextW(buffer, 1024);
-
-    std::wstring developerSecret(buffer);
-
-    free(buffer);
-
-    int length = m_editHeaders.GetWindowTextLengthW() + 1;
-
-    buffer = (WCHAR *)calloc(length, sizeof(WCHAR));
-
-    if (buffer == NULL)
-    {
-        Output("ERROR ALLOCATING HEADERS BUFFER");
-    }
-
-    m_editHeaders.GetWindowTextW(buffer, length);
-
-    std::wstring headers(buffer);
-
-    free(buffer);
-
-    length = m_editBody.GetWindowTextLengthW() + 1;
-
-    buffer = (WCHAR *)calloc(length, sizeof(WCHAR));
-
-    if (buffer == NULL)
-    {
-        Output("ERROR ALLOCATING BODY BUFFER");
-    }
-
-    m_editBody.GetWindowTextW(buffer, length);
-
-    std::wstring body(buffer);
-
-    free(buffer);
-
-    std::string hashedCanonicalRequest = HashCanonicalRequest(method, uri, headers, body, algorithm);
-
-    std::string signingKey = CreateSigningKey(requestDate, nonce, developerSecret, algorithm);
-
-    std::string requestSignature = CreateRequestSignature(requestDate, developerKey, hashedCanonicalRequest, signingKey, algorithm);
-
-    std::string tpAuthorizationHeader = CreateTpAuthorizationHeader(version, developerKey, headers, nonce, requestDate, requestSignature, algorithm);
+	std::string tpAuthorization = GenerateTPAuth();
 }
 
 std::string CtriPOSOpenSSLHMACSampleDlg::HashCanonicalRequest(std::wstring method, std::wstring uri, std::wstring headers, std::wstring body, std::wstring algorithm)
@@ -323,8 +317,6 @@ std::string CtriPOSOpenSSLHMACSampleDlg::HashCanonicalRequest(std::wstring metho
     if (!body.empty())
     {
         std::string bodyMultiByte(ToMultiByte(body.c_str()));
-
-        //Output(bodyMultiByte, "body");
 
         Output(bodyMultiByte.length(), "body length");
 
@@ -452,6 +444,7 @@ std::string CtriPOSOpenSSLHMACSampleDlg::CreateTpAuthorizationHeader(std::wstrin
 void CtriPOSOpenSSLHMACSampleDlg::OutputClear()
 {
     m_editOutput.SetWindowTextW(L"");
+	m_editOutput2.SetWindowTextW(L"");
 }
 
 void CtriPOSOpenSSLHMACSampleDlg::Output(const void *value, int length, const char *tag)
@@ -840,3 +833,120 @@ std::string CtriPOSOpenSSLHMACSampleDlg::Trim(std::string string, char trimChar)
     return string.substr(start, end - start);
 }
 
+// Send the request with hmac auth
+void CtriPOSOpenSSLHMACSampleDlg::OnBnClickedButtonGo3()
+{
+	WCHAR *buffer;
+	WSADATA wsaData;
+
+	buffer = (WCHAR *)calloc(1024 + 1, sizeof(WCHAR));
+
+	if (buffer == NULL)
+	{
+		Output("ERROR ALLOCATING BUFFER");
+
+		return;
+	}
+
+	if (WSAStartup(0x0202, &wsaData) != 0) {
+		AfxMessageBox(_T("WSAStartup() failed"));
+		return;
+	}
+
+	const char ip[] = { "127.0.0.1" };
+	int port = 8080;
+	struct sockaddr_in serveraddr;
+	serveraddr.sin_family = AF_INET;
+	serveraddr.sin_addr.s_addr = inet_addr(ip);
+	serveraddr.sin_port = htons(port);
+
+	int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (sock < 0) {
+		AfxMessageBox(_T("socket() failed"));
+	}
+
+	// Connect to server through socket
+	if (connect(sock, (struct sockaddr *) &serveraddr, sizeof(serveraddr)) < 0)
+	{
+		AfxMessageBox(_T("connect() failed"));
+	}
+
+	// Build hmac auth headers
+	std::string tpAuthorization = GenerateTPAuth();
+
+	// Parse the URI
+	m_editUri.GetWindowTextW(buffer, 1024);
+	std::wstring wuri(buffer);
+	std::string scheme;
+	std::string host;
+	std::string path;
+	std::string query;
+	std:string requestBody = ToMultiByte(body.c_str());
+	ParseUri(wuri, scheme, host, std::to_string(port), path, query);
+
+	// Get the method
+	m_comboBoxMethod.GetLBText(m_comboBoxMethod.GetCurSel(), buffer);
+	std::wstring wmethod(buffer);
+	std::string method = ToMultiByte(wmethod.c_str());
+
+	// Get the algorithm
+	m_comboBoxAlgorithm.GetLBText(m_comboBoxAlgorithm.GetCurSel(), (LPTSTR)buffer);
+	std::wstring walgorithm(buffer);
+	std::string algorithm = ToMultiByte(walgorithm.c_str());
+
+	// Build the request
+	string request = method + " " + path + " HTTP/1.0\r\n";
+	request += ToMultiByte(headers.c_str()) + "\r\n";
+	request += "tp-authorization: " + tpAuthorization + "\r\n";
+	request += "Content-Length: " + std::to_string(requestBody.length()) + "\r\n";
+	request += "Connection: close\r\n";
+	request += "\r\n";
+	request += requestBody;
+	request += "\r\n";
+
+	// Send request
+	if (send(sock, request.c_str(), request.length(), 0) != request.length()) {
+		AfxMessageBox(_T("send() sent a different number of bytes than expected"));
+	}
+
+	//Get Response
+	string response = "";
+	int resp_leng = BUFFERSIZE;
+	char buff[BUFFERSIZE];
+	while (resp_leng > 0) {
+		resp_leng = recv(sock, (char*)&buff, BUFFERSIZE, 0);
+		if (resp_leng > 0) {
+			response += string(buff).substr(0, resp_leng);
+		}
+	}
+
+	// Remove BOM
+	// The pattern \r\n\r\n indicates the end of the header
+	string endOfHeader = "\r\n\r\n";
+	// Obtain the substring before that pattern (the header)
+	string header = response.substr(0, response.find(endOfHeader));
+	// Obtain the length of the header minus one to get the index at which the header ends
+	int indexOfContent = header.length() - 1;
+	// Add 5 to the header index to skip the four endOfHeader chars and the one BOM char to get to the index of the first < in the content and extract the content
+	string content = response.substr(indexOfContent + 5, response.length());
+	// Put the response and header back together without the BOM chars to display it
+	response = header + endOfHeader + content;
+
+	// Close the connection and socket
+	closesocket(sock);
+
+	// Cleanup
+	WSACleanup();
+
+	std::wstringstream output;
+
+	output << response.c_str();
+
+	output << "\r\n";
+
+	int windowsTextLength = m_editOutput.GetWindowTextLengthW();
+
+	m_editOutput2.SetSel(windowsTextLength, windowsTextLength);
+
+	m_editOutput2.ReplaceSel(output.str().data());
+}
