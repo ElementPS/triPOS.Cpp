@@ -1,5 +1,9 @@
 # triPOS.Cpp
 
+<a href="https://developer.vantiv.com/?utm_campaign=githubcta&utm_medium=hyperlink&utm_source=github&utm_content=gotquestions">Got questions? Connect with our experts on Vantiv ONE.</a>
+
+<a href="https://developer.vantiv.com/?utm_campaign=githubcta&utm_medium=hyperlink&utm_source=github&utm_content=codingforcommerce">Are you coding for commerce? Connect with our experts on Vantiv ONE.</a>
+
 * Questions?  certification@elementps.com
 * **Feature request?** Open an issue.
 * Feel like **contributing**?  Submit a pull request.
@@ -8,7 +12,7 @@
 ### This sample demonstrates HMAC header signing with C++
 
 
-##Prerequisites
+## Prerequisites
 
 Please contact your Integration Analyst for any questions about the below prerequisites.
 
@@ -21,13 +25,13 @@ Please contact your Integration Analyst for any questions about the below prereq
 * In Visual Studio add your openssl headers to the include directories i.e. `C:\openssl\include` 
 * In Visual Studio add to the linker the openssl additional include directories i.e. `C:\OpenSSL\OpenSSL-Win32\lib\VC\static`
 
-##Documentation/Troubleshooting
+## Documentation/Troubleshooting
 
 * To view the triPOS embedded API documentation point your favorite browser to:  http://localhost:8080/help/ (for a default install).”
 * In addition to the help documentation above triPOS writes information to a series of log files located at:  C:\Program Files (x86)\Vantiv\triPOS Service\Logs (for a default install).
 * If you are having trouble building the project, ensure you have openssl installed correctly on windows and you have included openssl headers and link files as mentioned above in the prerequisites
 
-##Step 1: Generate a request package
+## Step 1: Generate a request package
 
 The sample pre-populates the JSON body and a default set of headers. Notice that the value in laneId is 9999.  This is the 'null' laneId meaning a transaction will flow through the system without requiring hardware.  All lanes are configured in the triPOS.config file located at:  C:\Program Files (x86)\Vantiv\triPOS Service (if you kept the default installation directory).  If you modify this file make sure to restart the triPOS.NET service in the Services app to read in your latest triPOS.config changes.
 
@@ -52,7 +56,7 @@ referer:http://www.ezprocessingsoftware.com:8006/EzCharge/Vantiv/ProcessSale?sys
 user-agent:Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; rv:11.0) like Gecko
 ```
 
-##Step 2: Run the hmac authorization header creation
+## Step 2: Run the hmac authorization header creation
 It is very helpful to look over the code while following along with the integration guide. 
 Note that this just generates the header information for viewing (step 3 will send a real request)
 
@@ -62,7 +66,7 @@ Note that this just generates the header information for viewing (step 3 will se
 * Supply your developer key and secret into the provided form fields
 * When ready click `Go` and this will build up the HMAC authorization string as noted in the integration guide titled: `HMAC authorization header (tp-authorization)`
 
-####This will use the given data to build up the authorization string as viewed in the `GenerateTPAuth` method
+#### This will use the given data to build up the authorization string as viewed in the `GenerateTPAuth` method
 
 ```
 std::string CtriPOSOpenSSLHMACSampleDlg::GenerateTPAuth()
@@ -81,7 +85,7 @@ std::string CtriPOSOpenSSLHMACSampleDlg::GenerateTPAuth()
 }
 ```
 
-##Step 3: Send the request 
+## Step 3: Send the request 
 Note that this builds the data on its own (apart from the header generation demonstration in part 2)
 ```
 void CtriPOSOpenSSLHMACSampleDlg::OnBnClickedButtonGo3()
@@ -203,12 +207,7 @@ void CtriPOSOpenSSLHMACSampleDlg::OnBnClickedButtonGo3()
 }
 ```
 
-
-
-###©2015-2016 Element Payment Services, Inc., a Vantiv company. All Rights Reserved.
+##### ©2015-2016 Element Payment Services, Inc., a Vantiv company. All Rights Reserved.
 
 Disclaimer:
 This software and all specifications and documentation contained herein or provided to you hereunder (the "Software") are provided free of charge strictly on an "AS IS" basis. No representations or warranties are expressed or implied, including, but not limited to, warranties of suitability, quality, merchantability, or fitness for a particular purpose (irrespective of any course of dealing, custom or usage of trade), and all such warranties are expressly and specifically disclaimed. Element Payment Services, Inc., a Vantiv company, shall have no liability or responsibility to you nor any other person or entity with respect to any liability, loss, or damage, including lost profits whether foreseeable or not, or other obligation for any cause whatsoever, caused or alleged to be caused directly or indirectly by the Software. Use of the Software signifies agreement with this disclaimer notice.
-
-
- 
